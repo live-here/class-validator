@@ -43,7 +43,7 @@ export class ValidationExecutor {
         /**
          * If there is no metadata registered it means possibly the dependencies are not flatterned and
          * more than one instance is used.
-         * 
+         *
          * TODO: This needs proper handling, forcing to use the same container or some other proper solution.
          */
         if (!this.metadataStorage.hasValidationMetaData) {
@@ -53,6 +53,21 @@ export class ValidationExecutor {
         const groups = this.validatorOptions ? this.validatorOptions.groups : undefined;
         const targetMetadatas = this.metadataStorage.getTargetValidationMetadatas(object.constructor, targetSchema, groups);
         const groupedMetadatas = this.metadataStorage.groupByPropertyName(targetMetadatas);
+
+        // if object has an unknown propertie throws a unknown value error
+        if (this.validatorOptions && this.validatorOptions.forbidUnknownValues) {
+            Object.keys(object).forEach((key: string) => {
+                if (!groupedMetadatas.hasOwnProperty(key)) {
+                    const validationError = new ValidationError();
+                    validationError.target = object;
+                    validationError.value = (object as any)[key];
+                    validationError.property = key;
+                    validationError.children = [];
+                    validationError.constraints = {unknownValue: "an unknown value was passed to the validate function"};
+                    validationErrors.push(validationError);
+                }
+            });
+        }
 
         if (this.validatorOptions && this.validatorOptions.forbidUnknownValues && !targetMetadatas.length) {
             const validationError = new ValidationError();
@@ -66,7 +81,7 @@ export class ValidationExecutor {
             validationError.value = undefined;
             validationError.property = undefined;
             validationError.children = [];
-            validationError.constraints = { unknownValue: "an unknown value was passed to the validate function" };
+            validationError.constraints = {unknownValue: "an unknown value was passed to the validate function"};
 
             validationErrors.push(validationError);
 
@@ -81,7 +96,7 @@ export class ValidationExecutor {
             const value = (object as any)[propertyName];
             const definedMetadatas = groupedMetadatas[propertyName].filter(metadata => metadata.type === ValidationTypes.IS_DEFINED);
             const metadatas = groupedMetadatas[propertyName].filter(
-              metadata => metadata.type !== ValidationTypes.IS_DEFINED && metadata.type !== ValidationTypes.WHITELIST);
+                metadata => metadata.type !== ValidationTypes.IS_DEFINED && metadata.type !== ValidationTypes.WHITELIST);
             const customValidationMetadatas = metadatas.filter(metadata => metadata.type === ValidationTypes.CUSTOM_VALIDATION);
             const nestedValidationMetadatas = metadatas.filter(metadata => metadata.type === ValidationTypes.NESTED_VALIDATION);
             const conditionalValidationMetadatas = metadatas.filter(metadata => metadata.type === ValidationTypes.CONDITIONAL_VALIDATION);
@@ -128,7 +143,7 @@ export class ValidationExecutor {
                 notAllowedProperties.forEach(property => {
                     validationErrors.push({
                         target: object, property, value: (object as any)[property], children: undefined,
-                        constraints: { [ValidationTypes.WHITELIST]: `property ${property} should not exist` }
+                        constraints: {[ValidationTypes.WHITELIST]: `property ${property} should not exist`}
                     });
                 });
 

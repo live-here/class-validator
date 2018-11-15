@@ -41,13 +41,20 @@ describe("validator options", function() {
 
     it("should returns error on unknown objects if forbidUnknownValues is true", function () {
 
-        const anonymousObject = { badKey: "This should not pass." };
+        class MyClass {
+            @IsNotEmpty()
+            title: string = "";
+        }
+
+        const anonymousObject = new MyClass() as any;
+        anonymousObject.title = "title";
+        anonymousObject.forbidUnknownValue = "forbidUnknownValue";
 
         return validator.validate(anonymousObject, { forbidUnknownValues: true }).then(errors => {
             errors.length.should.be.equal(1);
             expect(errors[0].target).to.be.equal(anonymousObject);
-            expect(errors[0].property).to.be.equal(undefined);
-            expect(errors[0].value).to.be.equal(undefined);
+            expect(errors[0].property).to.be.equal("forbidUnknownValue");
+            expect(errors[0].value).to.be.equal("forbidUnknownValue");
             errors[0].children.should.be.instanceof(Array);
             errors[0].constraints.should.be.eql({ unknownValue: "an unknown value was passed to the validate function" });
         });
@@ -61,6 +68,5 @@ describe("validator options", function() {
             errors.length.should.be.equal(0);
         });
     });
-
 
 });
