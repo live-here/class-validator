@@ -230,6 +230,9 @@ export class ValidationExecutor {
                     if (customConstraintMetadata.async && this.ignoreAsyncValidations)
                         return;
 
+                    if (this.validatorOptions && this.validatorOptions.stopAtFirstError && Object.keys(error.constraints).length > 0)
+                        return;
+
                     const validationArguments: ValidationArguments = {
                         targetName: object.constructor ? (object.constructor as any).name : undefined,
                         property: metadata.propertyName,
