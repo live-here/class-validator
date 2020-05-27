@@ -62,4 +62,8 @@ export interface ValidatorOptions {
      */
     forbidUnknownValues?: boolean;
 
+    /**
+     * Settings true will stop validation when encount first error.
+     */
+    stopAtFirstError?: boolean;
 }
