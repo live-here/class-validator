@@ -1,4 +1,4 @@
-import {ValidationArguments} from "../validation/ValidationArguments";
+import { ValidationArguments } from "../validation/ValidationArguments";
 
 /**
  * Options used to pass to validation decorators.
@@ -6,13 +6,13 @@ import {ValidationArguments} from "../validation/ValidationArguments";
 export interface ValidationOptions {
 
     /**
-     * Specifies if validated value is an array and each of its item must be validated.
+     * Specifies if validated value is an array and each of its items must be validated.
      */
     each?: boolean;
 
     /**
-     * Error message used to be used on validation fail.
-     * Message can be either string, either a function that returns a string.
+     * Error message to be used on validation fail.
+     * Message can be either string or a function that returns a string.
      */
     message?: string | ((validationArguments: ValidationArguments) => string);
 
@@ -30,4 +30,16 @@ export interface ValidationOptions {
      * A transient set of data passed through to the validation result for response mapping
      */
     context?: any;
+}
+
+
+export function isValidationOptions(val: any): val is ValidationOptions {
+    if (!val) {
+        return false;
+    }
+    return "each" in val
+        || "message" in val
+        || "groups" in val
+        || "always" in val
+        || "context" in val;
 }

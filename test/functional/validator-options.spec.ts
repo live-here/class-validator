@@ -1,27 +1,10 @@
-import "es6-shim";
-import {IsNotEmpty} from "../../src/decorator/decorators";
-import {Validator} from "../../src/validation/Validator";
-import {expect} from "chai";
-
-import {should, use } from "chai";
-
-import * as chaiAsPromised from "chai-as-promised";
-
-should();
-use(chaiAsPromised);
-
-// -------------------------------------------------------------------------
-// Setup
-// -------------------------------------------------------------------------
+import { IsNotEmpty } from "../../src/decorator/decorators";
+import { Validator } from "../../src/validation/Validator";
 
 const validator = new Validator();
 
-// -------------------------------------------------------------------------
-// Specifications: common decorators
-// -------------------------------------------------------------------------
-
-describe("validator options", function() {
-    it("should not return target in validation error if validationError: { target: false } is set", function() {
+describe("validator options", () => {
+    it("should not return target in validation error if validationError: { target: false } is set", () => {
         class MyClass {
             @IsNotEmpty()
             title: string = "";
@@ -30,17 +13,23 @@ describe("validator options", function() {
 
         const model = new MyClass();
         model.title = "";
-        return validator.validate(model, { skipMissingProperties: true, validationError: { target: false } }).then(errors => {
-            errors.length.should.be.equal(1);
-            expect(errors[0].target).to.be.undefined;
-            errors[0].property.should.be.equal("title");
-            errors[0].constraints.should.be.eql({ isNotEmpty: "title should not be empty" });
-            errors[0].value.should.be.equal("");
-        });
+        return validator
+            .validate(model, {
+                skipMissingProperties: true,
+                validationError: { target: false },
+            })
+            .then((errors) => {
+                expect(errors.length).toEqual(1);
+                expect(errors[0].target).toBeUndefined();
+                expect(errors[0].property).toEqual("title");
+                expect(errors[0].constraints).toEqual({
+                    isNotEmpty: "title should not be empty",
+                });
+                expect(errors[0].value).toEqual("");
+            });
     });
 
     it("should returns error on unknown objects if forbidUnknownValues is true", function () {
-
         class MyClass {
             @IsNotEmpty()
             title: string = "";
@@ -50,23 +39,28 @@ describe("validator options", function() {
         anonymousObject.title = "title";
         anonymousObject.forbidUnknownValue = "forbidUnknownValue";
 
-        return validator.validate(anonymousObject, { forbidUnknownValues: true }).then(errors => {
-            errors.length.should.be.equal(1);
-            expect(errors[0].target).to.be.equal(anonymousObject);
-            expect(errors[0].property).to.be.equal("forbidUnknownValue");
-            expect(errors[0].value).to.be.equal("forbidUnknownValue");
-            errors[0].children.should.be.instanceof(Array);
-            errors[0].constraints.should.be.eql({ unknownValue: "an unknown value was passed to the validate function" });
-        });
+        return validator
+            .validate(anonymousObject, { forbidUnknownValues: true })
+            .then((errors) => {
+                expect(errors.length).toEqual(1);
+                expect(errors[0].target).toEqual(anonymousObject);
+                expect(errors[0].property).toEqual(undefined);
+                expect(errors[0].value).toEqual(undefined);
+                expect(errors[0].children).toBeInstanceOf(Array);
+                expect(errors[0].constraints).toEqual({
+                    unknownValue:
+                        "an unknown value was passed to the validate function",
+                });
+            });
     });
 
     it("should return no error on unknown objects if forbidUnknownValues is false", function () {
-
         const anonymousObject = { badKey: "This should not pass." };
 
-        return validator.validate(anonymousObject, { forbidUnknownValues: false }).then(errors => {
-            errors.length.should.be.equal(0);
-        });
+        return validator
+            .validate(anonymousObject, { forbidUnknownValues: false })
+            .then((errors) => {
+                expect(errors.length).toEqual(0);
+            });
     });
-
 });
